@@ -1,0 +1,32 @@
+services:
+  # Spring Boot Backend Web Service
+  - type: web
+    name: supportai-backend
+    env: java
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -jar target/supportai-backend-1.0.0.jar"
+    rootDir: backend
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: dev
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+    autoDeploy: true
+
+  # React Frontend Static Site
+  - type: web
+    name: supportai-frontend
+    env: static
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "frontend/dist"
+    rootDir: frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://supportai-backend.onrender.com
+    autoDeploy: true

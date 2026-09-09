@@ -1,0 +1,31 @@
+# Compiled class file
+backend/target/
+*.class
+
+# Node dependencies and build
+frontend/node_modules/
+frontend/dist/
+
+# Log files
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual environments & IDE
+.idea/
+.vscode/
+*.iml
+.project
+.settings/
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db

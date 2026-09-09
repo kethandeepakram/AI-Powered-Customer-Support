@@ -1,0 +1,298 @@
+{
+  "info": {
+    "name": "AI Customer Support Platform API",
+    "_postman_id": "844eaf26-0d9d-4e48-aac9-supportai-postman",
+    "description": "Comprehensive Postman test collection for AI Customer Support Platform (Spring Boot + AI NLP + JWT)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "customerToken", "value": "" },
+    { "key": "agentToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "chatSessionId", "value": "session-demo-001" },
+    { "key": "createdTicketId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login as Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('customerToken', jsonData.token);",
+                  "    console.log('Customer token saved!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@supportai.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('agentToken', jsonData.token);",
+                  "    console.log('Agent token saved!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@supportai.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "    console.log('Admin token saved!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@supportai.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Register New Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"fullName\": \"Jane Doe\",\n  \"role\": \"ROLE_CUSTOMER\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. AI Chatbot & Escalation",
+      "item": [
+        {
+          "name": "Chatbot - General Knowledge Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"How can I reset my password?\",\n  \"customerName\": \"Alex\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/chat/message", "host": ["{{baseUrl}}"], "path": ["api", "chat", "message"] }
+          }
+        },
+        {
+          "name": "Chatbot - Human Escalation Intent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"message\": \"I am frustrated and want to speak with a human agent immediately\",\n  \"customerName\": \"Alex\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/chat/message", "host": ["{{baseUrl}}"], "path": ["api", "chat", "message"] }
+          }
+        },
+        {
+          "name": "Get Chat Session History",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/chat/history/{{chatSessionId}}", "host": ["{{baseUrl}}"], "path": ["api", "chat", "history", "{{chatSessionId}}"] }
+          }
+        },
+        {
+          "name": "Explicit Chat Escalation to Ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{chatSessionId}}\",\n  \"customerName\": \"Alex Johnson\",\n  \"customerEmail\": \"customer@supportai.com\",\n  \"title\": \"Urgent Live Chat Escalation\",\n  \"reason\": \"Customer requested human intervention for unresolved billing dispute\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/chat/escalate", "host": ["{{baseUrl}}"], "path": ["api", "chat", "escalate"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Ticket Management & AI Copilot",
+      "item": [
+        {
+          "name": "Create Ticket (Auto AI Classification + Sentiment)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set('createdTicketId', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Duplicate charge on September invoice\",\n  \"description\": \"I was billed twice for $99.00 on my credit card. This is terrible and unacceptable. Please fix and refund right now!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+          }
+        },
+        {
+          "name": "List Tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/tickets", "host": ["{{baseUrl}}"], "path": ["api", "tickets"] }
+          }
+        },
+        {
+          "name": "Get Ticket Detail by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/tickets/{{createdTicketId}}", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{createdTicketId}}"] }
+          }
+        },
+        {
+          "name": "Add Message to Ticket Thread",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Any update on my refund? Still waiting for a response!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/tickets/{{createdTicketId}}/messages", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{createdTicketId}}", "messages"] }
+          }
+        },
+        {
+          "name": "Agent AI Copilot - Generate Suggested Draft",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{agentToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/tickets/{{createdTicketId}}/ai-suggestion", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{createdTicketId}}", "ai-suggestion"] }
+          }
+        },
+        {
+          "name": "Update Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{agentToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/tickets/{{createdTicketId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "tickets", "{{createdTicketId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Knowledge Base & FAQ",
+      "item": [
+        {
+          "name": "Get All FAQs",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/faq", "host": ["{{baseUrl}}"], "path": ["api", "faq"] }
+          }
+        },
+        {
+          "name": "Search FAQs by Query",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/faq?q=password", "host": ["{{baseUrl}}"], "path": ["api", "faq"], "query": [{ "key": "q", "value": "password" }] }
+          }
+        },
+        {
+          "name": "Mark FAQ Article as Helpful",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/faq/1/helpful", "host": ["{{baseUrl}}"], "path": ["api", "faq", "1", "helpful"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Analytics Dashboard",
+      "item": [
+        {
+          "name": "Get Analytics Summary KPIs",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/analytics/summary", "host": ["{{baseUrl}}"], "path": ["api", "analytics", "summary"] }
+          }
+        }
+      ]
+    }
+  ]
+}
