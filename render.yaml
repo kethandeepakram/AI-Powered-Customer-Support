@@ -1,11 +1,10 @@
 services:
-  # Spring Boot Backend Web Service
+  # Spring Boot Backend
   - type: web
     name: supportai-backend
-    env: java
-    buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -jar target/supportai-backend-1.0.0.jar"
-    rootDir: backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: dev
@@ -15,12 +14,12 @@ services:
         sync: false
     autoDeploy: true
 
-  # React Frontend Static Site
+  # React Frontend
   - type: web
     name: supportai-frontend
-    env: static
+    runtime: static
     buildCommand: "npm install && npm run build"
-    staticPublishPath: "frontend/dist"
+    staticPublishPath: "dist"
     rootDir: frontend
     routes:
       - type: rewrite
