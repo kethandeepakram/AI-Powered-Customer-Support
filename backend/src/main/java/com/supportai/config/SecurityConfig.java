@@ -6,6 +6,7 @@ import com.supportai.security.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -67,16 +68,15 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/faq/**").permitAll()
-                        .requestMatchers("/api/chat/**").permitAll()
-                        .requestMatchers("/api/analytics/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        // Any other request requires authentication
-                        .anyRequest().authenticated()
-                );
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    .requestMatchers("/api/auth/**").permitAll()
+    .requestMatchers("/api/faq/**").permitAll()
+    .requestMatchers("/api/chat/**").permitAll()
+    .requestMatchers("/api/analytics/**").permitAll()
+    .requestMatchers("/h2-console/**").permitAll()
+    .requestMatchers("/error").permitAll()
+    .anyRequest().authenticated()
+);
 
         // Required for H2 console frame access
         http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
