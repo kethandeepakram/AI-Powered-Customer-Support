@@ -7,7 +7,8 @@ import com.supportai.repository.FaqArticleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FaqService {
@@ -27,7 +28,63 @@ public class FaqService {
         if (query == null || query.isBlank()) {
             return faqRepository.findAll();
         }
-        return faqRepository.searchArticles(query.trim());
+
+        String normalized = query.toLowerCase(Locale.ROOT).trim();
+
+        // First try the database's exact substring search.
+        List<FaqArticle> directMatches = faqRepository.searchArticles(normalized);
+        if (!directMatches.isEmpty()) {
+            return directMatches;
+        }
+
+        // If the user asks a natural-language question, the whole sentence
+        // usually will not match an FAQ title/content exactly. Rank FAQs by
+        // meaningful words instead.
+        Set<String> stopWords = Set.of(
+                "the", "a", "an", "and", "or", "to", "for", "of", "in", "on",
+                "is", "are", "do", "does", "how", "what", "why", "where", "can",
+                "could", "would", "i", "me", "my", "we", "our", "you", "your",
+                "please", "tell", "about", "with", "from", "this", "that"
+        );
+
+        List<String> words = Arrays.stream(normalized.split("[^a-z0-9]+"))
+                .filter(w -> w.length() >= 3 && !stopWords.contains(w))
+                .distinct()
+                .toList();
+
+        if (words.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return faqRepository.findAll().stream()
+                .map(faq -> {
+                    String text = ((faq.getTitle() == null ? "" : faq.getTitle()) + " " +
+                            (faq.getContent() == null ? "" : faq.getContent()) + " " +
+                            (faq.getTags() == null ? "" : faq.getTags()))
+                            .toLowerCase(Locale.ROOT);
+
+                    int score = 0;
+                    for (String word : words) {
+                        if (text.contains(word)) {
+                            score++;
+                        }
+                    }
+
+                    // Exact title word matches are more useful than body-only matches.
+                    String title = faq.getTitle() == null ? "" : faq.getTitle().toLowerCase(Locale.ROOT);
+                    for (String word : words) {
+                        if (title.contains(word)) {
+                            score++;
+                        }
+                    }
+
+                    return new AbstractMap.SimpleEntry<>(faq, score);
+                })
+                .filter(e -> e.getValue() > 0)
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                .limit(3)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     public FaqArticle createFaq(FaqRequest request) {
