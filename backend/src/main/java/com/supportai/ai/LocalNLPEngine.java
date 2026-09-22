@@ -73,7 +73,6 @@ public class LocalNLPEngine {
             }
         }
 
-        // Clamp between -1.0 and 1.0
         score = Math.max(-1.0, Math.min(1.0, score));
 
         SentimentType label;
@@ -90,7 +89,6 @@ public class LocalNLPEngine {
             label = SentimentType.NEUTRAL;
         }
 
-        // Check explicit escalation request
         if (checkEscalationIntent(lower)) {
             escalationTriggered = true;
         }
@@ -175,6 +173,10 @@ public class LocalNLPEngine {
             return "I completely understand. I am transferring you directly to a human agent right now. An agent will review our conversation history so you don't have to repeat anything.";
         }
 
+        if (isComplaintRegistrationRequest(lower)) {
+            return "Absolutely. I can register this as a support complaint. I will create a support ticket from the issue you described and provide the ticket number.";
+        }
+
         if (lower.matches("^(hi|hello|hey|good morning|good afternoon|greetings).*")) {
             return "Hello! I'm SupportAI, your virtual assistant. I can help with billing, account access, technical issues, FAQs, and support tickets. How can I help you today?";
         }
@@ -196,6 +198,27 @@ public class LocalNLPEngine {
 
         return "Thank you for reaching out. I've noted your question: \"" + message + "\".\n\n" +
                 "To assist you best: could you provide any error messages, transaction IDs, or specific steps to reproduce the issue? Alternatively, say 'agent' at any time to connect with a representative.";
+    }
+
+    private boolean isComplaintRegistrationRequest(String message) {
+        if (message == null || message.isBlank()) {
+            return false;
+        }
+
+        String lower = message.toLowerCase();
+        return lower.contains("register a complaint")
+                || lower.contains("register complaint")
+                || lower.contains("raise a complaint")
+                || lower.contains("raise complaint")
+                || lower.contains("file a complaint")
+                || lower.contains("file complaint")
+                || lower.contains("create a complaint")
+                || lower.contains("create complaint")
+                || lower.contains("open a complaint")
+                || lower.contains("register a ticket")
+                || lower.contains("create a ticket")
+                || lower.contains("raise a ticket")
+                || lower.contains("open a ticket");
     }
 
     public String generateAgentDraftReply(String customerName, String title, TicketCategory category, SentimentType sentiment) {
