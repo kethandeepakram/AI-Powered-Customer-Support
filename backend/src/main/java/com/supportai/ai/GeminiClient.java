@@ -44,7 +44,7 @@ public class GeminiClient {
                 ? systemInstruction + "\n\nUser: " + userPrompt
                 : userPrompt;
 
-        String[] modelsToTry = {model, "gemini-3.7-flash", "gemini-3.6-flash"};
+        String[] modelsToTry = {model, "gemini-3.7-flash", "gemini-3.6-flash", "gemini-2.5-flash"};
 
         Exception lastException = null;
 
