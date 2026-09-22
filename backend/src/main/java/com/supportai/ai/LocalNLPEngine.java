@@ -176,7 +176,16 @@ public class LocalNLPEngine {
         }
 
         if (lower.matches("^(hi|hello|hey|good morning|good afternoon|greetings).*")) {
-            return "Hello! I'm SupportAI, your virtual assistant. How can I help you today? You can ask about billing, account security, API integration, or type 'speak to agent' if you prefer human support.";
+            return "Hello! I'm SupportAI, your virtual assistant. I can help with billing, account access, technical issues, FAQs, and support tickets. How can I help you today?";
+        }
+
+        if (lower.contains("who are you") ||
+                lower.contains("what are you") ||
+                lower.contains("about yourself") ||
+                lower.contains("what can you do") ||
+                lower.contains("how can you help") ||
+                lower.contains("what do you help")) {
+            return "I'm SupportAI, an AI-powered customer support assistant. I can answer common support questions, explain billing and account topics, help troubleshoot technical issues, search the knowledge base, and connect you with a human agent when needed.";
         }
 
         if (!faqs.isEmpty()) {
