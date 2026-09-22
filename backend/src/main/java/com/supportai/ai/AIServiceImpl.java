@@ -60,7 +60,7 @@ public class AIServiceImpl implements AIService {
         if ("gemini".equalsIgnoreCase(provider) || "auto".equalsIgnoreCase(provider)) {
             if (geminiClient.isConfigured()) {
                 try {
-                    String systemPrompt = buildSystemPrompt(faqs);
+                    String systemPrompt = buildSystemPrompt(faqs, history);
                     return geminiClient.generateContent(systemPrompt, userMessage);
                 } catch (Exception e) {
                     logger.warn("Gemini generation failed, falling back to Local NLP: {}", e.getMessage());
@@ -71,7 +71,7 @@ public class AIServiceImpl implements AIService {
         if ("openai".equalsIgnoreCase(provider) || "auto".equalsIgnoreCase(provider)) {
             if (openAIClient.isConfigured()) {
                 try {
-                    String systemPrompt = buildSystemPrompt(faqs);
+                    String systemPrompt = buildSystemPrompt(faqs, history);
                     return openAIClient.generateCompletion(systemPrompt, userMessage);
                 } catch (Exception e) {
                     logger.warn("OpenAI generation failed, falling back to Local NLP: {}", e.getMessage());
@@ -122,10 +122,25 @@ public class AIServiceImpl implements AIService {
         return localNLPEngine.checkEscalationIntent(text);
     }
 
-    private String buildSystemPrompt(List<FaqArticle> faqs) {
+    private String buildSystemPrompt(List<FaqArticle> faqs, List<ChatMessage> history) {
         StringBuilder sb = new StringBuilder();
         sb.append("You are SupportAI, an intelligent, empathetic customer support assistant for our software platform.\n");
+        sb.append("Be natural and conversational. Answer general questions directly instead of assuming every message is a support incident.\n");
         sb.append("Be polite, concise, and helpful. If the customer expresses severe anger or requests a human, offer to escalate immediately.\n");
+        sb.append("Use the recent conversation history to maintain context. Do not repeat questions the customer has already answered.\n");
+
+        if (history != null && !history.isEmpty()) {
+            sb.append("\nRecent conversation history:\n");
+            int start = Math.max(0, history.size() - 8);
+            for (int i = start; i < history.size(); i++) {
+                ChatMessage message = history.get(i);
+                String speaker = message.getSenderType() == null
+                        ? "Unknown"
+                        : message.getSenderType().name();
+                sb.append("- ").append(speaker).append(": ")
+                        .append(message.getContent()).append("\n");
+            }
+        }
         if (faqs != null && !faqs.isEmpty()) {
             sb.append("\nRelevant Knowledge-Base Articles for grounding:\n");
             for (FaqArticle faq : faqs) {
